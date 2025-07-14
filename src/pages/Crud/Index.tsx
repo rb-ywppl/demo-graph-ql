@@ -16,6 +16,7 @@ import Form from "./Form";
 import View from "./View";
 import type { DATAI } from "./types";
 import { toast } from "sonner";
+import { setAuthToken } from "../../client/apolloClient";
 
 const Index = () => {
   const [data, setData] = useState<DATAI[]>([]);
@@ -63,12 +64,23 @@ const Index = () => {
       refetch();
     }
   };
+  const handleSetToken = () => {
+    setAuthToken(
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2N2I0NGM2NThlY2Y0ZWNmY2FhMzRkMzgiLCJ0b2tlblZlcnNpb24iOjM1LCJjb21wYW55SWQiOiI2NzU3YzZlZDNhYTFlODU2MTc0YzQ5NzIiLCJicmFuY2hJZCI6IjY4NjM3ZTZjYzgwNDBlNmJkNWQyNWE3ZCIsInR5cGUiOiJ1c2VyIiwiaWF0IjoxNzUyNDc0OTM0LCJleHAiOjE3NTI3MzQxMzR9.T5PG5vST1MHd8L8BOmIuNGP1xtJ4JHWg-UJuT2rXpjI"
+    );
+  };
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-slate-800">Categories</h1>
         <div className="flex gap-3">
+          <Button
+            onClick={handleSetToken}
+            className="bg-teal-600 hover:bg-teal-700 text-white"
+          >
+            Set Token
+          </Button>
           <Button
             onClick={() => refetch()}
             className="bg-teal-600 hover:bg-teal-700 text-white"

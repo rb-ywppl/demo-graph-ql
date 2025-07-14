@@ -85,8 +85,8 @@ const Form: FC<IProps> = ({
     },
   });
 
-  const handleClose = async () => {
-    await refetch();
+  const handleClose = () => {
+    refetch();
     resetForm();
     onClose();
     setEditData(null);
