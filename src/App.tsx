@@ -1,5 +1,5 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import MaterialCategory from "./pages/MaterialCategory/Index";
+import Crud from "./pages/Crud/Index";
 import { Toaster } from "sonner";
 
 const App = () => {
@@ -7,7 +7,7 @@ const App = () => {
     <>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<MaterialCategory />} />
+          <Route path="/" element={<Crud />} />
         </Routes>
       </BrowserRouter>
       <Toaster richColors position="bottom-right" />

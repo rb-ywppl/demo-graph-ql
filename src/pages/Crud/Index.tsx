@@ -1,10 +1,7 @@
 import { useMutation, useQuery } from "@apollo/client";
 import { Eye, Pencil, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
-import {
-  DELETE_MATERIAL_CATEGORY,
-  FIND_MATERIAL_CATEGORY,
-} from "../../client/querys/materialCategory/Index";
+import { DELETE_RECORDS, FIND_RECORDS } from "../../client/querys/crud/Index";
 import { Button } from "../../components/ui/button";
 import {
   Table,
@@ -35,11 +32,11 @@ const Index = () => {
     data: findUserData,
     loading,
     refetch,
-  } = useQuery(FIND_MATERIAL_CATEGORY, {
+  } = useQuery(FIND_RECORDS, {
     variables: { type: "materialCategory" },
   });
 
-  const [deleteCategory] = useMutation(DELETE_MATERIAL_CATEGORY);
+  const [deleteCategory] = useMutation(DELETE_RECORDS);
 
   useEffect(() => {
     if (!loading) {
@@ -70,9 +67,7 @@ const Index = () => {
   return (
     <div className="p-6 max-w-7xl mx-auto">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-slate-800">
-          Material Categories
-        </h1>
+        <h1 className="text-2xl font-bold text-slate-800">Categories</h1>
         <div className="flex gap-3">
           <Button
             onClick={() => refetch()}

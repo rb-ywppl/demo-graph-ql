@@ -1,6 +1,6 @@
 import { gql } from "@apollo/client";
 
-export const FIND_MATERIAL_CATEGORY = gql`
+export const FIND_RECORDS = gql`
   query AllReferenceData($type: String!) {
     allReferenceData(type: $type) {
       success
@@ -27,7 +27,7 @@ export const FIND_MATERIAL_CATEGORY = gql`
   }
 `;
 
-export const GET_MATERIAL_CATEGORY = gql`
+export const GET_RECORDS = gql`
   query AllReferenceData($id: ID!) {
     allReferenceData(id: $id) {
       success
@@ -54,7 +54,7 @@ export const GET_MATERIAL_CATEGORY = gql`
   }
 `;
 
-export const CREATE_MATERIAL_CATEGORY = gql`
+export const CREATE_RECORDS = gql`
   mutation CreateReferenceData($createInput: CreateReferenceDataInput!) {
     createReferenceData(createInput: $createInput) {
       success
@@ -71,7 +71,7 @@ export const CREATE_MATERIAL_CATEGORY = gql`
   }
 `;
 
-export const UPDATE_MATERIAL_CATEGORY = gql`
+export const UPDATE_RECORDS = gql`
   mutation UpdateReferenceData(
     $updateReferenceDataInput: UpdateReferenceDataInput!
   ) {
@@ -90,7 +90,7 @@ export const UPDATE_MATERIAL_CATEGORY = gql`
   }
 `;
 
-export const DELETE_MATERIAL_CATEGORY = gql`
+export const DELETE_RECORDS = gql`
   mutation RemoveReferenceData($id: ID!) {
     removeReferenceData(id: $id) {
       success

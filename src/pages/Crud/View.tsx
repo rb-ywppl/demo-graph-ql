@@ -28,7 +28,7 @@ const ViewDialog: FC<Props> = ({ open, onClose, data }) => {
       <DialogContent className="sm:max-w-3xl">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold text-slate-800">
-            View Material Category
+            View Details
           </DialogTitle>
         </DialogHeader>
 

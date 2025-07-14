@@ -1,69 +1,211 @@
-# React + TypeScript + Vite
+# GraphQL Integration Guide
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+this guide documents how GraphQL is integrated into the Material Category management module using Apollo Client, including setup, query structure, and usage in form, table, and view components.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### 🧱 Folder Structure
 
-## Expanding the ESLint configuration
+```
+client/
+  └── querys/
+      └── crud/
+          └── Index.ts   # Contains all related queries/mutations
+apolloClient.ts           # Apollo Client setup
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+components/
+  └── ui/                 # Custom UI components (Input, Dialog, Table, etc.)
+  └── Switch.tsx          # Toggle switch component
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+pages/
+  └── Crud/
+      ├── Index.tsx       # Table + actions
+      ├── Form.tsx        # Create/Update form
+      ├── View.tsx        # View dialog
+      └── types.ts        # Type definitions
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+---
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## ⚙️ Apollo Client Setup
 
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+**File**: `apolloClient.ts`
+
 ```
+import { ApolloClient, InMemoryCache, createHttpLink } from "@apollo/client";
+import { setContext } from "@apollo/client/link/context";
+
+const httpLink = createHttpLink({
+  uri: "http://192.168.2.15:8001/graphql",
+});
+
+export const setAuthToken = (token: string) => {
+  localStorage.setItem("AUTH_KEY", token);
+};
+
+const authLink = setContext((_, { headers }) => {
+  const token = localStorage.getItem("AUTH_KEY");
+  return {
+    headers: {
+      ...headers,
+      authorization: token ? `Bearer ${token}` : "",
+    },
+  };
+});
+
+export const client = new ApolloClient({
+  link: authLink.concat(httpLink),
+  cache: new InMemoryCache(),
+});
+
+```
+
+Use this `client` in your root provider:
+
+```tsx
+import { ApolloProvider } from "@apollo/client";
+import { client } from "./client/apolloClient";
+
+<ApolloProvider client={client}>
+  <App />
+</ApolloProvider>;
+```
+
+---
+
+## 📡 GraphQL Queries & Mutations
+
+**File**: `client/querys/crud/Index.ts`
+
+- `FIND_RECORDS`: Fetch all reference data by type
+- `GET_RECORDS`: Fetch by ID
+- `CREATE_RECORDS`: Create new
+- `UPDATE_RECORDS`: Update existing
+- `DELETE_RECORDS`: Delete by ID
+
+---
+
+## 🧾 Table + Actions (Index Page)
+
+**File**: `Crud/Index.tsx`
+
+- Fetches data using `useQuery(FIND_RECORDS)`
+- Shows records in a table
+- Handles add, edit, view, delete actions
+- Uses `Form.tsx` and `View.tsx` components
+
+Key logic:
+
+```
+const { data, loading, refetch } = useQuery(FIND_RECORDS, {
+  variables: { type: "materialCategory" },
+});
+
+const [deleteCategory] = useMutation(DELETE_RECORDS);
+
+const handleDelete = async (item: DATAI) => {
+  const res = await deleteCategory({ variables: { id: item._id } });
+  if (res?.data?.removeReferenceData?.success) {
+    toast.success(res.data.removeReferenceData.message);
+    refetch();
+  }
+};
+
+```
+
+---
+
+## 📝 Create / Update Form
+
+**File**: `Crud/Form.tsx`
+
+Uses `useMutation(CREATE_RECORDS)` and `useMutation(UPDATE_RECORDS)`:
+
+```
+const [createUser] = useMutation(CREATE_RECORDS);
+const [updateUser] = useMutation(UPDATE_RECORDS);
+
+const onSubmit = async (data) => {
+  const mutation = editData ? updateUser : createUser;
+  const response = await mutation({
+    variables: {
+      ...(editData
+        ? {
+            updateReferenceDataInput: {
+              id: editData._id,
+              type: "materialCategory",
+              ...data,
+            },
+          }
+        : {
+            createInput: {
+              type: "materialCategory",
+              ...data,
+            },
+          }),
+    },
+  });
+
+  if (response?.data?.[editData ? "updateReferenceData" : "createReferenceData"]?.success) {
+    toast.success("Saved");
+    refetch();
+    onClose();
+  }
+};
+
+```
+
+---
+
+## 👁️ View Dialog
+
+**File**: `Crud/View.tsx`
+
+- Accepts `data` of type `DATAI`
+- Shows non-editable info using custom dialog and labels
+- Dates formatted using `toLocaleString`
+
+---
+
+## 📦 TypeScript Interface
+
+**File**: `Crud/types.ts`
+
+```
+export interface DATAI {
+  _id: string;
+  type: string;
+  name: string;
+  description: string;
+  status: boolean;
+  isArchived: boolean;
+  companyId: {
+    _id: string;
+    companyName: string;
+  };
+  branchId: {
+    _id: string;
+    branchName: string;
+  };
+  createdAt: string;
+  updatedAt: string;
+}
+
+```
+
+---
+
+## 🔁 Refetching Data
+
+Each mutation triggers a `refetch()` on success to update the table UI with the latest data.
+
+---
+
+## ✅ Final Tips
+
+- Separate queries by domain/module like you’ve done for scalability.
+- Always handle errors (GraphQL + Network).
+- Use `toast` or `Snackbar` for user feedback.
+- For large forms, break into sections and use reusable field components.
+- Use optimistic UI or `cache.modify` for performance tuning
